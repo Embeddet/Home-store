@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - ElectroStore</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="products-page">
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <i class="fas fa-microchip"></i>
+                    <span>ElectroStore</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="products.html" class="nav-link active">Products</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button class="cart-btn" onclick="toggleCart()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Page Header -->
+        <section class="page-header">
+            <div class="container">
+                <h1>Our Products</h1>
+                <p>Discover our comprehensive range of electronics components and accessories</p>
+            </div>
+        </section>
+
+        <!-- Search and Filter Section -->
+        <section class="search-filter-section">
+            <div class="container">
+                <div class="search-filter-bar">
+                    <div class="search-box">
+                        <input type="text" id="product-search" placeholder="Search products..." onkeyup="searchProducts()">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="filter-controls">
+                        <select id="sort-by" onchange="sortProducts()">
+                            <option value="name">Sort by Name</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="rating">Rating</option>
+                        </select>
+                        <select id="price-range" onchange="filterByPrice()">
+                            <option value="all">All Prices</option>
+                            <option value="0-25">$0 - $25</option>
+                            <option value="25-50">$25 - $50</option>
+                            <option value="50-100">$50 - $100</option>
+                            <option value="100+">$100+</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section class="products-section">
+            <div class="container">
+                <div class="products-sidebar">
+                    <h3>Categories</h3>
+                    <div class="category-list">
+                        <div class="category-item">
+                            <input type="checkbox" id="cat-all" value="all" checked onchange="filterByCategory()">
+                            <label for="cat-all">All Products</label>
+                        </div>
+                        <div class="category-item">
+                            <input type="checkbox" id="cat-batteries" value="batteries" onchange="filterByCategory()">
+                            <label for="cat-batteries">Batteries</label>
+                        </div>
+                        <div class="category-item">
+                            <input type="checkbox" id="cat-arduino" value="arduino" onchange="filterByCategory()">
+                            <label for="cat-arduino">Arduino Boards</label>
+                        </div>
+                        <div class="category-item">
+                            <input type="checkbox" id="cat-sensors" value="sensors" onchange="filterByCategory()">
+                            <label for="cat-sensors">Sensors</label>
+                        </div>
+                        <div class="category-item">
+                            <input type="checkbox" id="cat-modules" value="modules" onchange="filterByCategory()">
+                            <label for="cat-modules">Modules</label>
+                        </div>
+                        <div class="category-item">
+                            <input type="checkbox" id="cat-tools" value="tools" onchange="filterByCategory()">
+                            <label for="cat-tools">Tools</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="products-main">
+                    <div class="products-grid" id="products-grid">
+                        <!-- Products will be populated by JavaScript -->
+                    </div>
+                    <div class="pagination" id="pagination">
+                        <!-- Pagination will be added here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content product-modal-content">
+            <span class="close" onclick="closeProductModal()">&times;</span>
+            <div class="product-detail" id="product-detail">
+                <!-- Product details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping Cart Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Shopping Cart</h3>
+                <span class="close" onclick="toggleCart()">&times;</span>
+            </div>
+            <div class="cart-items" id="cart-items">
+                <!-- Cart items will be populated here -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    Total: $<span id="cart-total">0.00</span>
+                </div>
+                <div class="cart-actions">
+                    <button class="btn-secondary" onclick="clearCart()">Clear Cart</button>
+                    <button class="btn-primary" onclick="proceedToCheckout()">Checkout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ElectroStore</h3>
+                    <p>Your trusted partner for premium electronics components and embedded systems.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p><i class="fas fa-envelope"></i> info@electrostore.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 ElectroStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>

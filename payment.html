@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - ElectroStore</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Load Paystack.js -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <!-- Workaround for Paystack language detection issue -->
+    <script>
+        // Fix for Paystack language detection error
+        (function() {
+            const originalNavigator = window.navigator;
+            if (!originalNavigator.language || originalNavigator.language === null) {
+                Object.defineProperty(window.navigator, 'language', {
+                    value: 'en-US',
+                    writable: false,
+                    configurable: false
+                });
+            }
+            
+            // Suppress repetitive Paystack console errors
+            const originalConsoleError = console.error;
+            console.error = function(...args) {
+                const message = args.join(' ');
+                if (message.includes('Cannot destructure property') && message.includes('language')) {
+                    // Suppress this specific error
+                    return;
+                }
+                originalConsoleError.apply(console, args);
+            };
+        })();
+    </script>
+    
+    <style>
+        /* Paystack modal styling */
+        iframe[src*="checkout.paystack.com"], iframe[src*="paystack"] {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 999999 !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        /* Bank Transfer Styling */
+        .bank-transfer-info {
+            background: #f8f9fa;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .bank-transfer-info h4 {
+            color: #007bff;
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+        
+        .bank-details {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .bank-detail-item {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        
+        .bank-detail-item strong {
+            color: #333;
+            display: inline-block;
+            width: 140px;
+        }
+        
+        .transfer-instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .transfer-instructions h5 {
+            color: #856404;
+            margin: 0 0 10px 0;
+        }
+        
+        .transfer-instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .transfer-instructions li {
+            margin: 5px 0;
+            color: #856404;
+        }
+        
+        .bank-transfer-actions {
+            text-align: center;
+            margin: 20px 0 0 0;
+        }
+        
+        .bank-transfer-actions button {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <i class="fas fa-microchip"></i>
+                    <span>ElectroStore</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="products.html" class="nav-link">Products</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <button class="cart-btn" onclick="toggleCart()">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Page Header -->
+        <section class="page-header">
+            <div class="container">
+                <h1>Secure Payment</h1>
+                <p>Complete your order with secure payment processing</p>
+                <!-- Payment Gateway Test Tools -->
+                <div class="payment-test-tools" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                    <h4 style="margin: 0 0 10px 0; color: #007bff;">🔧 Payment Gateway Testing</h4>
+                    <p style="margin: 0 0 10px 0; font-size: 14px;">Use these tools to verify the payment gateway is working correctly:</p>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="runPaymentGatewayTest()" class="btn-secondary" style="font-size: 12px; padding: 8px 12px;">
+                            🔍 Check Gateway Status
+                        </button>
+                        <button onclick="testPaystackPayment()" class="btn-secondary" style="font-size: 12px; padding: 8px 12px;">
+                            🧪 Test Payment (₦1)
+                        </button>
+                        <button onclick="console.log('Payment Gateway Debug Info:', {paystack: !!paystack, key: PAYSTACK_PUBLIC_KEY?.substring(0,10) + '...', timestamp: new Date()})" class="btn-secondary" style="font-size: 12px; padding: 8px 12px;">
+                            📊 Debug Info
+                        </button>
+                    </div>
+                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #6c757d;">
+                        <strong>Test Card:</strong> 4084084084084081 | <strong>CVV:</strong> 408 | <strong>Expiry:</strong> Any future date
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Payment Content -->
+        <section class="payment-content">
+            <div class="container">
+                <div class="payment-grid">
+                    <!-- Order Summary -->
+                    <div class="order-summary-section">
+                        <h2>Order Summary</h2>
+                        <div class="order-items" id="order-items">
+                            <!-- Order items will be populated here -->
+                        </div>
+                        <div class="order-totals">
+                            <div class="total-row">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">$0.00</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Shipping:</span>
+                                <span id="shipping">$5.99</span>
+                            </div>
+                            <div class="total-row">
+                                <span>Tax:</span>
+                                <span id="tax">$0.00</span>
+                            </div>
+                            <div class="total-row final-total">
+                                <span>Total:</span>
+                                <span id="final-total">$0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="payment-form-section">
+                        <h2>Payment Information</h2>
+                        <form id="payment-form">
+                            <!-- Billing Information -->
+                            <div class="form-section">
+                                <h3>Billing Information</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="billing-first-name">First Name *</label>
+                                        <input type="text" id="billing-first-name" name="billingFirstName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="billing-last-name">Last Name *</label>
+                                        <input type="text" id="billing-last-name" name="billingLastName" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="billing-email">Email Address *</label>
+                                    <input type="email" id="billing-email" name="billingEmail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="billing-phone">Phone Number</label>
+                                    <input type="tel" id="billing-phone" name="billingPhone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="billing-address">Address *</label>
+                                    <input type="text" id="billing-address" name="billingAddress" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="billing-city">City *</label>
+                                        <input type="text" id="billing-city" name="billingCity" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="billing-state">State *</label>
+                                        <input type="text" id="billing-state" name="billingState" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="billing-zip">ZIP Code *</label>
+                                        <input type="text" id="billing-zip" name="billingZip" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="billing-country">Country *</label>
+                                    <select id="billing-country" name="billingCountry" required>
+                                        <option value="US">United States</option>
+                                        <option value="CA">Canada</option>
+                                        <option value="GB">United Kingdom</option>
+                                        <option value="DE">Germany</option>
+                                        <option value="FR">France</option>
+                                        <option value="AU">Australia</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Shipping Information -->
+                            <div class="form-section">
+                                <div class="shipping-header">
+                                    <h3>Shipping Information</h3>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="same-as-billing" onchange="toggleShippingAddress()">
+                                        <span>Same as billing address</span>
+                                    </label>
+                                </div>
+                                <div id="shipping-form" class="shipping-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="shipping-first-name">First Name *</label>
+                                            <input type="text" id="shipping-first-name" name="shippingFirstName">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="shipping-last-name">Last Name *</label>
+                                            <input type="text" id="shipping-last-name" name="shippingLastName">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="shipping-address">Address *</label>
+                                        <input type="text" id="shipping-address" name="shippingAddress">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="shipping-city">City *</label>
+                                            <input type="text" id="shipping-city" name="shippingCity">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="shipping-state">State *</label>
+                                            <input type="text" id="shipping-state" name="shippingState">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="shipping-zip">ZIP Code *</label>
+                                            <input type="text" id="shipping-zip" name="shippingZip">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Method -->
+                            <div class="form-section">
+                                <h3>Payment Method</h3>
+                                <div class="payment-options">
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment-method" value="card" checked onchange="togglePaymentMethod()">
+                                        <span><i class="fas fa-credit-card"></i> Credit/Debit Card</span>
+                                    </label>
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment-method" value="paypal" onchange="togglePaymentMethod()">
+                                        <span><i class="fab fa-paypal"></i> PayPal</span>
+                                    </label>
+                                    <label class="payment-option">
+                                        <input type="radio" name="payment-method" value="bank-transfer" onchange="togglePaymentMethod()">
+                                        <span><i class="fas fa-university"></i> Bank Transfer</span>
+                                    </label>
+                                </div>
+
+                                <!-- Paystack Card Element -->
+                                <div id="card-payment" class="payment-method-form">
+                                    <div class="form-group">
+                                        <label for="card-element">Card Information</label>
+                                        <div id="card-element" class="stripe-element">
+                                            <!-- Paystack will populate this area -->
+                                        </div>
+                                        <div id="card-errors" role="alert" class="error-message"></div>
+                                    </div>
+                                </div>
+
+                                <!-- PayPal Container -->
+                                <div id="paypal-payment" class="payment-method-form" style="display: none;">
+                                    <div id="paypal-button-container"></div>
+                                </div>
+
+                                <!-- Bank Transfer Information -->
+                                <div id="bank-transfer-payment" class="payment-method-form" style="display: none;">
+                                    <div class="bank-transfer-info">
+                                        <h4><i class="fas fa-university"></i> Bank Transfer Details</h4>
+                                        <div class="bank-details">
+                                            <div class="bank-detail-item">
+                                                <strong>Bank Name:</strong> First National Bank
+                                            </div>
+                                            <div class="bank-detail-item">
+                                                <strong>Account Name:</strong> ElectroStore Ltd.
+                                            </div>
+                                            <div class="bank-detail-item">
+                                                <strong>Account Number:</strong> 1234567890
+                                            </div>
+                                            <div class="bank-detail-item">
+                                                <strong>Routing Number:</strong> 123456789
+                                            </div>
+                                            <div class="bank-detail-item">
+                                                <strong>SWIFT Code:</strong> FNBKUS33
+                                            </div>
+                                        </div>
+                                        <div class="transfer-instructions">
+                                            <h5>Payment Instructions:</h5>
+                                            <ol>
+                                                <li>Download your invoice using the button below</li>
+                                                <li>Transfer the exact amount to the bank account above</li>
+                                                <li>Use your order number as the transfer reference</li>
+                                                <li>Email us the transfer receipt at payments@electrostore.com</li>
+                                                <li>We'll process your order within 24 hours of payment confirmation</li>
+                                            </ol>
+                                        </div>
+                                        <div class="bank-transfer-actions">
+                                            <button type="button" class="btn-primary" onclick="generateBankTransferInvoice()">
+                                                <i class="fas fa-download"></i> Download Invoice for Transfer
+                                            </button>
+                                            <button type="button" class="btn-secondary" onclick="printBankTransferInvoice()">
+                                                <i class="fas fa-print"></i> Print Invoice
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Information -->
+                            <div class="security-info">
+                                <div class="security-badges">
+                                    <div class="security-badge">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>SSL Encrypted</span>
+                                    </div>
+                                    <div class="security-badge">
+                                        <i class="fas fa-lock"></i>
+                                        <span>Secure Payment</span>
+                                    </div>
+                                    <div class="security-badge">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Powered by Paystack</span>
+                                    </div>
+                                </div>
+                                <p class="security-text">
+                                    Your payment information is encrypted and secure. We never store your card details.
+                                </p>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" id="submit-payment" class="payment-submit-btn">
+                                <i class="fas fa-lock"></i>
+                                <span id="submit-button-text">Complete Payment</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content success-modal">
+            <div class="success-content">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Payment Successful!</h3>
+                <p>Thank you for your order. You will receive a confirmation email shortly.</p>
+                <div class="order-details" id="success-order-details">
+                    <!-- Order details will be populated here -->
+                </div>
+                <div class="success-actions">
+                    <button class="btn-primary" onclick="goToHome()">Continue Shopping</button>
+                    <button class="btn-secondary" onclick="printInvoice()">Print Invoice</button>
+                    <button class="btn-secondary" onclick="downloadInvoice()">Download PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ElectroStore</h3>
+                    <p>Your trusted partner for premium electronics components and embedded systems.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="products.html">Products</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p><i class="fas fa-envelope"></i> info@electrostore.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 ElectroStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script src="payment.js"></script>
+</body>
+</html>
