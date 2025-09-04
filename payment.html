@@ -10,7 +10,7 @@
     <!-- Load Paystack.js -->
     <script src="https://js.paystack.co/v1/inline.js"></script>
     <!-- Workaround for Paystack language detection issue -->
-    <script>
+    <!-- <script>
         // Fix for Paystack language detection error
         (function() {
             const originalNavigator = window.navigator;
@@ -33,7 +33,7 @@
                 originalConsoleError.apply(console, args);
             };
         })();
-    </script>
+    </script> -->
     
     <style>
         /* Paystack modal styling */
@@ -147,7 +147,7 @@
                 <h1>Secure Payment</h1>
                 <p>Complete your order with secure payment processing</p>
                 <!-- Payment Gateway Test Tools -->
-                <div class="payment-test-tools" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                <!-- <div class="payment-test-tools" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
                     <h4 style="margin: 0 0 10px 0; color: #007bff;">🔧 Payment Gateway Testing</h4>
                     <p style="margin: 0 0 10px 0; font-size: 14px;">Use these tools to verify the payment gateway is working correctly:</p>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -160,10 +160,10 @@
                         <button onclick="console.log('Payment Gateway Debug Info:', {paystack: !!paystack, key: PAYSTACK_PUBLIC_KEY?.substring(0,10) + '...', timestamp: new Date()})" class="btn-secondary" style="font-size: 12px; padding: 8px 12px;">
                             📊 Debug Info
                         </button>
-                    </div>
-                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #6c757d;">
+                    </div> -->
+                    <!-- <p style="margin: 10px 0 0 0; font-size: 12px; color: #6c757d;">
                         <strong>Test Card:</strong> 4084084084084081 | <strong>CVV:</strong> 408 | <strong>Expiry:</strong> Any future date
-                    </p>
+                    </p> -->
                 </div>
             </div>
         </section>
@@ -196,6 +196,14 @@
                                 <span id="final-total">$0.00</span>
                             </div>
                         </div>
+                            <div class="order-invoice-actions" style="margin: 20px 0; text-align: center;">
+                                <button type="button" class="btn-secondary" onclick="printInvoice()" style="margin-right: 10px;">
+                                    Print Invoice
+                                </button>
+                                <button type="button" class="btn-secondary" onclick="downloadInvoice()">
+                                    Download PDF
+                                </button>
+                            </div>
                     </div>
 
                     <!-- Payment Form -->
@@ -362,10 +370,10 @@
                                         </div>
                                         <div class="bank-transfer-actions">
                                             <button type="button" class="btn-primary" onclick="generateBankTransferInvoice()">
-                                                <i class="fas fa-download"></i> Download Invoice for Transfer
+                                                Download Invoice for Transfer
                                             </button>
                                             <button type="button" class="btn-secondary" onclick="printBankTransferInvoice()">
-                                                <i class="fas fa-print"></i> Print Invoice
+                                                Print Invoice
                                             </button>
                                         </div>
                                     </div>
@@ -410,7 +418,7 @@
         <div class="modal-content success-modal">
             <div class="success-content">
                 <div class="success-icon">
-                    <i class="fas fa-check-circle"></i>
+                    <!-- Icon removed -->
                 </div>
                 <h3>Payment Successful!</h3>
                 <p>Thank you for your order. You will receive a confirmation email shortly.</p>

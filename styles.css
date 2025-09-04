@@ -861,41 +861,7 @@ body:not(.products-page) #products-grid {
     }
 }
 
-/* Loading Spinner - DISABLED */
-.loading {
-    display: none !important;
-    visibility: hidden !important;
-    width: 20px;
-    height: 20px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #007bff;
-    border-radius: 50%;
-    animation: none !important;
-}
-
-@keyframes spin {
-    0% { transform: none !important; }
-    100% { transform: none !important; }
-}
-
-/* GLOBAL SPINNER KILLER - Disable all possible loaders */
-*[class*="load"], *[class*="spin"], *[class*="process"],
-.loading, .loader, .spinner, .loading-spinner,
-[data-loading], [data-spinner], .fa-spinner, .fa-spin {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    animation: none !important;
-    transform: none !important;
-}
-
-/* Kill all animations globally */
-*, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
-}
-
-/* Ensure body is always interactive */
+/* Spinner CSS removed */
 body.loading, body.is-loading, body.processing {
     pointer-events: auto !important;
     overflow: auto !important;

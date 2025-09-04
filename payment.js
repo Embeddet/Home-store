@@ -1,34 +1,11 @@
 // Paystack Configuration
 // Replace this with your actual Paystack test publishable key
 // Get your keys from: https://dashboard.paystack.com/#/settings/developer
-const PAYSTACK_PUBLIC_KEY = 'pk_test_99d801b477ef04a8c3b650911a733252e86f2606';
-const PAYSTACK_SECRET_KEY = 'sk_test_43bf8faed077c1339b6400db403161f414492c71';
+//const PAYSTACK_PUBLIC_KEY = 'pk_test_99d801b477ef04a8c3b650911a733252e86f2606';
+//const PAYSTACK_SECRET_KEY = 'sk_test_43bf8faed077c1339b6400db403161f414492c71';
 
 // Immediately stop any loaders when script loads
-(function() {
-    console.log('🚀 Payment script loaded - stopping any loaders immediately');
-    
-    // Force remove loading states
-    if (document.body) {
-        document.body.classList.remove('loading', 'is-loading');
-        document.body.style.pointerEvents = 'auto';
-        document.body.style.overflow = 'auto';
-    }
-    
-    if (document.documentElement) {
-        document.documentElement.classList.remove('loading', 'is-loading');
-    }
-    
-    // Hide any visible loaders immediately
-    setTimeout(() => {
-        const loaders = document.querySelectorAll('.loading, .loader, .loading-spinner, .spinner, [class*="loading"], [class*="spinner"]');
-        loaders.forEach(loader => {
-            loader.style.display = 'none';
-            loader.style.visibility = 'hidden';
-            loader.style.opacity = '0';
-        });
-    }, 100);
-})();
+// Spinner removal: No spinner logic needed
 
 // Initialize Paystack with error handling
 let paystack = null;
@@ -1693,53 +1670,7 @@ window.testPaystackPayment = testPaystackPayment;
 window.runPaymentGatewayTest = runPaymentGatewayTest;
 
 // Function to stop all loaders and loading states
-function stopAllLoaders() {
-    console.log('🛑 Stopping all loaders and loading states...');
-    
-    // Remove loading class from body and html
-    document.body.classList.remove('loading', 'is-loading');
-    document.documentElement.classList.remove('loading', 'is-loading');
-    
-    // Hide any loading overlays
-    const loadingElements = document.querySelectorAll([
-        '.loading',
-        '.loader',
-        '.loading-overlay',
-        '.loading-spinner',
-        '.spinner',
-        '[class*="loading"]',
-        '[class*="spinner"]'
-    ].join(','));
-    
-    loadingElements.forEach(element => {
-        element.style.display = 'none';
-        element.style.visibility = 'hidden';
-        element.style.opacity = '0';
-        element.remove(); // Remove completely if it's a loading element
-    });
-    
-    // Force hide processing modal
-    hideProcessingModal();
-    
-    // Clear any loading timeouts
-    for (let i = 1; i < 99999; i++) {
-        window.clearTimeout(i);
-    }
-    
-    // Ensure page is interactive
-    document.body.style.pointerEvents = 'auto';
-    document.body.style.overflow = 'auto';
-    document.body.style.cursor = 'auto';
-    
-    // Remove any loading styles
-    document.body.style.removeProperty('pointer-events');
-    document.body.style.removeProperty('overflow');
-    
-    console.log('✅ All loaders stopped');
-}
-
-// Make stopAllLoaders globally available for console access
-window.stopAllLoaders = stopAllLoaders;
+// Spinner and loader removal logic removed
 
 console.log('💡 Payment Gateway Testing Available!');
 console.log('Type: checkPaymentGateway() in console for full diagnostic');
